@@ -17,3 +17,10 @@ Welcome to the **GPT Chatbot Project**! This is a simple and customizable chatbo
 ---
 ### Requirements
 Works with Python 3.11.5 and lower. Designed to use parallel processing but if GPUs aren't available then it's also possible to run on google collab.
+
+
+Missing from directory:
+- wizard_of_oz.txt
+
+Can be obtained by downloading the wizard of oz plaintext from Gutenburg:
+https://www.gutenberg.org/ebooks/22566 and removing text unrelated to the story.

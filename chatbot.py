@@ -18,14 +18,16 @@ print(f'batch size: {args.batch_size}')
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 batch_size = int(args.batch_size)
-block_size = 128
-max_iters = 200
+# hyper parameters
+max_iters = 5000
+block_size = 64
+batch_size = 64
 learning_rate = 3e-4
 eval_iters = 100
 n_embd = 384
-n_head = 1
-n_layer = 1
-dropout = 0.2
+n_layer = 4
+dropout = 0.1
+n_head = 4
 
 print(device)
 
@@ -90,7 +92,7 @@ class MultiHeadAttention(nn.Module):
         return out
     
 
-class FeedFoward(nn.Module):
+class FeedForward(nn.Module):
     """ a simple linear layer followed by a non-linearity """
 
     def __init__(self, n_embd):
@@ -113,7 +115,7 @@ class Block(nn.Module):
         super().__init__()
         head_size = n_embd // n_head
         self.sa = MultiHeadAttention(n_head, head_size)
-        self.ffwd = FeedFoward(n_embd)
+        self.ffwd = FeedForward(n_embd)
         self.ln1 = nn.LayerNorm(n_embd)
         self.ln2 = nn.LayerNorm(n_embd)
 
@@ -127,7 +129,7 @@ class Block(nn.Module):
 class GPTLanguageModel(nn.Module):
     def __init__(self, vocab_size):
         super().__init__()
-        self.token_embedding_table = nn.Embedding(vocab_size, n_embd)
+        self.token_embeddings_table = nn.Embedding(vocab_size, n_embd)
         self.position_embedding_table = nn.Embedding(block_size, n_embd)
         self.blocks = nn.Sequential(*[Block(n_embd, n_head=n_head) for _ in range(n_layer)])
         self.ln_f = nn.LayerNorm(n_embd) # final layer norm
@@ -145,12 +147,12 @@ class GPTLanguageModel(nn.Module):
             torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
 
     def forward(self, index, targets=None):
-        print(index.shape)
+        #print(index.shape)
         B, T = index.shape
         
         
         # idx and targets are both (B,T) tensor of integers
-        tok_emb = self.token_embedding_table(index) # (B,T,C)
+        tok_emb = self.token_embeddings_table(index) # (B,T,C)
         pos_emb = self.position_embedding_table(torch.arange(T, device=device)) # (T,C)
         x = tok_emb + pos_emb # (B,T,C)
         x = self.blocks(x) # (B,T,C)
@@ -186,7 +188,7 @@ class GPTLanguageModel(nn.Module):
 
 model = GPTLanguageModel(vocab_size)
 print('loading model parameters...')
-with open('model-11.pkl', 'rb') as f:
+with open('model-1.pkl', 'rb') as f:
     model = pickle.load(f)
 print('loaded successfully!')
 m = model.to(device)
